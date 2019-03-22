@@ -27,8 +27,7 @@ touch " "
 touch "	"
 touch "foobar"
 
-su root -c "cp /dev/sda ."
-echo "here"
+su root -c "cp /dev/wd0 ."
 touch noowner
 su root -c "chown 1234 noowner"
 touch nogroup
