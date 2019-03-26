@@ -1,6 +1,7 @@
 # Custom
 *~
 testdir/
+*.swp
 
 # Prerequisites
 *.d
