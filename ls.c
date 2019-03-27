@@ -25,13 +25,13 @@ void append_vec(struct Vector *v, const void *item, size_t n) {
   }
   item_dup = malloc(n);
   memcpy(item_dup, item, n);
-  v->d[v->n--] = item_dup; 
+  v->d[v->n-1] = item_dup; 
 }
 
 void appends_vec(struct Vector *v, const char *str) {
   size_t n;
   n = strlen(str);
-  append_vec(v, str, n);
+  append_vec(v, str, n+1);
 }
 
 void free_vec(struct Vector *v) {
@@ -39,6 +39,15 @@ void free_vec(struct Vector *v) {
   for(i = 0; i < (int)v->n; i++) 
     free(v->d[i]);
   free(v->d);
+}
+
+/* test purpose only */
+void print_vec(const struct Vector *v) {
+  int i;
+  fputs("[ ", stdout);
+  for(i = 0; i < (int)v->n - 1; i++) 
+    printf("%s, ", (char*)v->d[i]);
+  printf("%s ]\n", (char*)v->d[i]);
 }
 
 static bool opts[128];
@@ -106,7 +115,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
-
+  /*print_vec(&nrml);
+  print_vec(&dirs);*/
         
   free_vec(&nrml);
   free_vec(&dirs);
