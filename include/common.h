@@ -1,3 +1,5 @@
+#ifndef _COMMON_H
+#define _COMMON_H
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,4 +18,4 @@ void err_sys(const char *, ...);
 void err_quit(const char *, ...);
 void err_ret(const char *, ...);
 void err_dump(const char *, ...);
-
+#endif /* _COMMON_H */

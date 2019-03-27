@@ -1,3 +1,4 @@
+#include <sys/types.h>
 #include "common.h"
 #include "getopt.h"
 #define MID_SIZE 8
@@ -75,9 +76,38 @@ int main(int argc, char *argv[]) {
   init_vec(&dirs, MID_SIZE);
   if(hsopt) i = 2;
   else i = 1;
-  if(i == argc)
-    appends_vec(&nrml, ".");
+  if(i == argc) {
+    if(opts['d'])
+      appends_vec(&nrml, ".");
+    else
+      appends_vec(&dirs, ".");
+  }
+  else {
+    for(; i < argc; i++) {
+      struct stat statbuf;
+      if(lstat(argv[i], &statbuf) == -1) {
+        err_ret("ls: cannot access \'%s\'", argv[i]);
+        continue;
+      }
+      if(S_ISDIR(statbuf.st_mode) && !opts['d'])
+        appends_vec(&dirs, argv[i]);
+      else if(S_ISLNK(statbuf.st_mode) && !opts['d']) {
+        if(stat(argv[i], &statbuf) == -1) {
+          err_ret("ls: cannot access \'%s\'", argv[i]);
+          continue;
+        }
+        if(S_ISDIR(statbuf.st_mode))
+          appends_vec(&dirs, argv[i]);
+        else
+          appends_vec(&nrml, argv[i]);
+      }
+      else
+        appends_vec(&nrml, argv[i]);
+    }
+  }
 
+
+        
   free_vec(&nrml);
   free_vec(&dirs);
   exit(0);

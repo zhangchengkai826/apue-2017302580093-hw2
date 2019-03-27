@@ -1,5 +1,7 @@
 IDIR=./include
 CC=gcc
+
+CFLAGSTEST=-I$(IDIR) -ansi -g -Werror -Wextra -Wformat=2 -Wjump-misses-init -Wlogical-op -Wpedantic -Wshadow
 CFLAGS=-I$(IDIR) -ansi -g -Wall -Werror -Wextra -Wformat=2 -Wjump-misses-init -Wlogical-op -Wpedantic -Wshadow
 
 ODIR=obj
@@ -12,10 +14,10 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
 $(ODIR)/%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGSTEST)
 
 ls: $(OBJ) 
-	$(CC) -o $@ $^ $(CFLAGS)	
+	$(CC) -o $@ $^ $(CFLAGSTEST)	
 
 .PHONY: clean
 clean:
