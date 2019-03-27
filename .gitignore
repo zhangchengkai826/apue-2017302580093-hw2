@@ -2,6 +2,7 @@
 *~
 testdir/
 *.swp
+ls
 
 # Prerequisites
 *.d
