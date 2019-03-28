@@ -67,6 +67,8 @@ void swap_vec(struct Vector *v, int i, int j) {
 void sort_vec(struct Vector *v, cmpfunc f, enum SORT_ORDER o) {
   bool chg;
   int i, j;
+  if(f == NULL)
+    return;
   for(chg = 0, i = 0, j = v->n; j-i > 1; chg = 0, i = 0, j--) {
     while(i + 1 < j) {
       switch(o) {
@@ -94,10 +96,15 @@ int cf_lex(void *a, void *b) {
   return strcmp(a, b);
 }
 
+void do_one(const char *fn) {
+  printf("%s\n", fn);
+}
+
 static bool opts[128];
 static bool is_trmnl; /* is_stdout_terminal? */
 static struct Vector nrml, dirs; /* variable array for normal files & dirs */
 static cmpfunc cf;
+static enum SORT_ORDER odr;
 
 int main(int argc, char *argv[]) {
   int opt, i;
@@ -160,14 +167,27 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  print_vec(&nrml);
   print_vec(&dirs);
         
   cf = cf_lex;
-  sort_vec(&nrml, cf, ASC);
-  sort_vec(&dirs, cf, ASC);
+  odr = ASC;
+  if(opts['f'])
+    cf = NULL;
+  
+  if(opts['r']) {
+    if(odr == ASC)
+      odr = DESC;
+    else if(odr == DESC)
+      odr = ASC;
+  }
 
-  print_vec(&nrml);
+  sort_vec(&nrml, cf, odr);
+  sort_vec(&dirs, cf, odr);
+
+  for(i = 0; i < (int)nrml.n; i++) {
+    do_one(nrml.d[i]);
+  }    
+
   print_vec(&dirs);
 
   free_vec(&nrml);
