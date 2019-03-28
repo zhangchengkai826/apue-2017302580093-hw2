@@ -50,9 +50,54 @@ void print_vec(const struct Vector *v) {
   printf("%s ]\n", (char*)v->d[i]);
 }
 
+/* returns a-b */
+typedef int (*cmpfunc)(void *a, void *b);
+enum SORT_ORDER {
+  ASC,
+  DESC
+};
+
+void swap_vec(struct Vector *v, int i, int j) {
+  void *t;
+  t = v->d[i];
+  v->d[i] = v->d[j];
+  v->d[j] = t;
+}
+
+void sort_vec(struct Vector *v, cmpfunc f, enum SORT_ORDER o) {
+  bool chg;
+  int i, j;
+  for(chg = 0, i = 0, j = v->n; j-i > 1; chg = 0, i = 0, j--) {
+    while(i + 1 < j) {
+      switch(o) {
+      case ASC:
+        if(f(v->d[i], v->d[i+1]) > 0) {
+          chg = 1;
+          swap_vec(v, i, i+1);
+        }
+        break;
+      case DESC:
+        if(f(v->d[i], v->d[i+1]) < 0) {
+          chg = 1;
+          swap_vec(v, i, i+1);
+        }
+        break;
+      }
+      i++;
+    }
+    if(!chg)
+      break;
+  }
+}
+
+int cf_lex(void *a, void *b) {
+  return strcmp(a, b);
+}
+
 static bool opts[128];
 static bool is_trmnl; /* is_stdout_terminal? */
 static struct Vector nrml, dirs; /* variable array for normal files & dirs */
+static cmpfunc cf;
 
 int main(int argc, char *argv[]) {
   int opt, i;
@@ -115,9 +160,16 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  /*print_vec(&nrml);
-  print_vec(&dirs);*/
+  print_vec(&nrml);
+  print_vec(&dirs);
         
+  cf = cf_lex;
+  sort_vec(&nrml, cf, ASC);
+  sort_vec(&dirs, cf, ASC);
+
+  print_vec(&nrml);
+  print_vec(&dirs);
+
   free_vec(&nrml);
   free_vec(&dirs);
   exit(0);

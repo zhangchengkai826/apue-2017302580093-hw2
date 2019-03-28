@@ -3,6 +3,7 @@
 testdir/
 *.swp
 ls
+root
 
 # Prerequisites
 *.d
