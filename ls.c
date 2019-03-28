@@ -2,6 +2,7 @@
 #include "common.h"
 #include "getopt.h"
 #define MID_SIZE 8
+#define LINE_MAX 1024
 
 typedef unsigned char bool;
 struct Vector {
@@ -96,8 +97,11 @@ int cf_lex(void *a, void *b) {
   return strcmp(a, b);
 }
 
-void do_one(const char *fn) {
-  printf("%s\n", fn);
+void getlf(char *buf, size_t n, const char *fn) { /* get long-format str */
+  struct stat statbuf;
+  if(lstat(fn, &statbuf) == -1)
+    err_ret("ls: cannot access \'%s\'", fn);
+  
 }
 
 static bool opts[128];
@@ -105,6 +109,13 @@ static bool is_trmnl; /* is_stdout_terminal? */
 static struct Vector nrml, dirs; /* variable array for normal files & dirs */
 static cmpfunc cf;
 static enum SORT_ORDER odr;
+
+void print_them(struct Vector *v) { /* fn: file_name */
+  int i;
+  if(opts['1']) 
+    for(i = 0; i < (int)v->n; i++)
+      printf("%s\n", (char*)v->d[i]);
+}
 
 int main(int argc, char *argv[]) {
   int opt, i;
@@ -167,8 +178,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  print_vec(&dirs);
-        
   cf = cf_lex;
   odr = ASC;
   if(opts['f'])
@@ -184,11 +193,7 @@ int main(int argc, char *argv[]) {
   sort_vec(&nrml, cf, odr);
   sort_vec(&dirs, cf, odr);
 
-  for(i = 0; i < (int)nrml.n; i++) {
-    do_one(nrml.d[i]);
-  }    
-
-  print_vec(&dirs);
+  print_them(&nrml);
 
   free_vec(&nrml);
   free_vec(&dirs);
