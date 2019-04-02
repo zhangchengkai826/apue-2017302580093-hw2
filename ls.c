@@ -1,3 +1,4 @@
+#include <dirent.h>
 #include <sys/types.h>
 #include "common.h"
 #include "getopt.h"
@@ -110,11 +111,16 @@ static struct Vector nrml, dirs; /* variable array for normal files & dirs */
 static cmpfunc cf;
 static enum SORT_ORDER odr;
 
-void print_them(struct Vector *v) { /* fn: file_name */
+void print_them(struct Vector *v, const char *blk_name) { 
   int i;
+  if(blk_name != NULL)
+    printf("%s:\n", blk_name);
+
   if(opts['1']) 
     for(i = 0; i < (int)v->n; i++)
       printf("%s\n", (char*)v->d[i]);
+
+  printf("\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -192,8 +198,23 @@ int main(int argc, char *argv[]) {
 
   sort_vec(&nrml, cf, odr);
   sort_vec(&dirs, cf, odr);
+  print_them(&nrml, NULL);
 
-  print_them(&nrml);
+  for(i = 0; i < (int)dirs.n; i++) {
+    DIR *dp;
+    struct dirent *dirp;
+    free_vec(&nrml);
+    init_vec(&nrml, MID_SIZE);
+    if((dp = opendir(dirs.d[i])) == NULL) {
+      err_ret("ls: cannot access \'%s\'", dirs.d[i]);
+      continue;
+    }
+    while((dirp = readdir(dp)) != NULL) {
+      appends_vec(&nrml, dirp->d_name);
+    }
+    sort_vec(&nrml, cf, odr);
+    print_them(&nrml, dirs.d[i]);
+  }
 
   free_vec(&nrml);
   free_vec(&dirs);
