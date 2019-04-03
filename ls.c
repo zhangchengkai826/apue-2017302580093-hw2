@@ -138,6 +138,9 @@ int main(int argc, char *argv[]) {
     opts['w'] = 1;
   }
 
+  if(geteuid() == 0) 
+    opts['A'] = 1;
+
   while((opt = getopt(argc, argv, "AacCdFfhiklnqRrSstuwx1")) != -1) {
     if(opt == 'w' || opt == 'q')
       opts['w'] = opts['q'] = 0;
