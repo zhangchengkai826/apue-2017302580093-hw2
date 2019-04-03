@@ -210,7 +210,10 @@ int main(int argc, char *argv[]) {
       continue;
     }
     while((dirp = readdir(dp)) != NULL) {
-      appends_vec(&nrml, dirp->d_name);
+      char *fn; /* directory entry name */
+      fn = dirp->d_name;
+      if(opts['a'] || (opts['A'] && strcmp(fn, ".") && strcmp(fn, "..")) || fn[0] != '.')
+        appends_vec(&nrml, fn);
     }
     sort_vec(&nrml, cf, odr);
     print_them(&nrml, dirs.d[i]);
