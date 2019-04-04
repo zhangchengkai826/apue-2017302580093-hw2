@@ -1,6 +1,7 @@
 IDIR=./include
 CC=gcc
 
+CFLAGSDEBUG=-I$(IDIR) -g
 CFLAGSTEST=-I$(IDIR) -ansi -g -Werror -Wextra -Wformat=2 -Wjump-misses-init -Wlogical-op -Wpedantic -Wshadow
 CFLAGS=-I$(IDIR) -ansi -g -Wall -Werror -Wextra -Wformat=2 -Wjump-misses-init -Wlogical-op -Wpedantic -Wshadow
 

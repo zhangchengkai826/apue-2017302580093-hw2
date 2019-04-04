@@ -116,10 +116,47 @@ void print_them(struct Vector *v, const char *blk_name) {
   if(blk_name != NULL)
     printf("%s:\n", blk_name);
 
-  if(opts['1']) 
-    for(i = 0; i < (int)v->n; i++)
-      printf("%s\n", (char*)v->d[i]);
-
+  for(i = 0; i < (int)v->n; i++) {
+    char fmt; /* file format */
+    char *fn = v->d[i];
+    char tag[2] = {0};
+    struct stat statbuf;
+    if(lstat(fn, &statbuf) < 0) 
+      err_ret("ls: cannot access \'%s\'", fn);
+    switch(statbuf.st_mode & __S_IFMT) {
+      case __S_IFREG:
+        fmt = '-';
+        if(statbuf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))
+          tag[0] = '*';
+        break;
+      case __S_IFDIR:
+        fmt = 'd';
+        tag[0] = '/';
+        break;
+      case __S_IFBLK:
+        fmt = 'b';
+        break;
+      case __S_IFCHR:
+        fmt = 'c';
+        break;
+      case __S_IFLNK:
+        fmt = 'l';
+        tag[0] = '@';
+        break;
+      case __S_IFSOCK:
+        fmt = 's';
+        tag[0] = '=';
+        break;
+      case __S_IFIFO:
+        fmt = 'p';
+        tag[0] = '|';
+        break;
+    }
+    if(!opts['F'])
+      tag[0] = '\0';
+    if(opts['1'])
+      printf("%s%s\n", fn, tag);
+  }
   printf("\n");
 }
 
