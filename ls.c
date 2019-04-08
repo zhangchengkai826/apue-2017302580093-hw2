@@ -120,7 +120,10 @@ void print_them(struct Vector *v, const char *blk_name) {
     char fmt; /* file format */
     char *fn = v->d[i];
     char tag[2] = {0};
+    int inode;
     struct stat statbuf;
+    char info[LINE_MAX];
+    int n;
     if(lstat(fn, &statbuf) < 0) 
       err_ret("ls: cannot access \'%s\'", fn);
     switch(statbuf.st_mode & __S_IFMT) {
@@ -152,10 +155,14 @@ void print_them(struct Vector *v, const char *blk_name) {
         tag[0] = '|';
         break;
     }
+    n = 0;
+    if(opts['i'])
+      n = sprintf(info, "%ld ", statbuf.st_ino); 
     if(!opts['F'])
       tag[0] = '\0';
+    sprintf(info + n, "%s%s", fn, tag);
     if(opts['1'])
-      printf("%s%s\n", fn, tag);
+      printf("%s\n", info);
   }
   printf("\n");
 }
