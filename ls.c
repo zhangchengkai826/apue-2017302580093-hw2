@@ -111,8 +111,43 @@ static struct Vector nrml, dirs; /* variable array for normal files & dirs */
 static cmpfunc cf;
 static enum SORT_ORDER odr;
 
+int get_blkcnt(const char *fn, char *szblkcnt) {
+  char *blksize;
+  int blkcnt;
+  struct stat statbuf;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  blkcnt = statbuf.st_blocks;
+  blksize = getenv("BLOCKSIZE");
+  if(blksize) {
+    float ratio = atoi(blksize) / 512.f;
+    blkcnt = ceilf(blkcnt / ratio);
+  }
+  if(szblkcnt)
+    sprintf(szblkcnt, "%d", blkcnt);
+  return blkcnt;
+}
+
+/* get max strlen of szblkcnt */
+int get_mlen_szblkcnt(struct Vector *v) {
+  int mlen = 0, i;
+  for(i = 0; i < (int)v->n; i++) {
+    char szblkcnt[LINE_MAX];
+    get_blkcnt(v->d[i], szblkcnt);
+    if((int)strlen(szblkcnt) > mlen)
+      mlen = strlen(szblkcnt);
+  }
+  return mlen;
+}
+
 void print_them(struct Vector *v, const char *blk_name) { 
   int i;
+  char oldwd[LINE_MAX]; /* old working dir */
+  int mlen_szblkcnt; 
+  getcwd(oldwd, sizeof(oldwd));
+  chdir(blk_name);
+
+  mlen_szblkcnt = get_mlen_szblkcnt(v);
   if(blk_name != NULL)
     printf("%s:\n", blk_name);
 
@@ -155,9 +190,11 @@ void print_them(struct Vector *v, const char *blk_name) {
         tag[0] = '|';
         break;
     }
-    n = 0;
+    n = 0; 
     if(opts['i'])
-      n = sprintf(info, "%ld ", statbuf.st_ino); 
+      n += sprintf(info + n, "%ld ", statbuf.st_ino); 
+    if(opts['s'])
+      n += sprintf(info + n, "%*d ", mlen_szblkcnt, get_blkcnt(fn, NULL));
     if(!opts['F'])
       tag[0] = '\0';
     sprintf(info + n, "%s%s", fn, tag);
@@ -165,6 +202,7 @@ void print_them(struct Vector *v, const char *blk_name) {
       printf("%s\n", info);
   }
   printf("\n");
+  chdir(oldwd);
 }
 
 int main(int argc, char *argv[]) {
