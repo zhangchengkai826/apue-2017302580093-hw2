@@ -111,6 +111,28 @@ static struct Vector nrml, dirs; /* variable array for normal files & dirs */
 static cmpfunc cf;
 static enum SORT_ORDER odr;
 
+long get_ino(const char *fn, char *szino) {
+  int ino;
+  struct stat statbuf;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  ino = statbuf.st_ino;
+  if(szino)
+    sprintf(szino, "%d", ino);
+  return ino;
+}
+
+int get_mlen_szino(struct Vector *v) {
+  int mlen = 0, i;
+  for(i = 0; i < (int)v->n; i++) {
+    char szino[LINE_MAX];
+    get_ino(v->d[i], szino);
+    if((int)strlen(szino) > mlen)
+      mlen = strlen(szino);
+  }
+  return mlen;
+}
+
 int get_blkcnt(const char *fn, char *szblkcnt) {
   char *blksize;
   int blkcnt;
@@ -143,10 +165,11 @@ int get_mlen_szblkcnt(struct Vector *v) {
 void print_them(struct Vector *v, const char *blk_name) { 
   int i;
   char oldwd[LINE_MAX]; /* old working dir */
-  int mlen_szblkcnt; 
+  int mlen_szino, mlen_szblkcnt; 
   getcwd(oldwd, sizeof(oldwd));
   chdir(blk_name);
 
+  mlen_szino = get_mlen_szino(v);
   mlen_szblkcnt = get_mlen_szblkcnt(v);
   if(blk_name != NULL)
     printf("%s:\n", blk_name);
@@ -155,7 +178,6 @@ void print_them(struct Vector *v, const char *blk_name) {
     char fmt; /* file format */
     char *fn = v->d[i];
     char tag[2] = {0};
-    int inode;
     struct stat statbuf;
     char info[LINE_MAX];
     int n;
@@ -192,7 +214,7 @@ void print_them(struct Vector *v, const char *blk_name) {
     }
     n = 0; 
     if(opts['i'])
-      n += sprintf(info + n, "%ld ", statbuf.st_ino); 
+      n += sprintf(info + n, "%*ld ", mlen_szino, get_ino(fn, NULL)); 
     if(opts['s'])
       n += sprintf(info + n, "%*d ", mlen_szblkcnt, get_blkcnt(fn, NULL));
     if(!opts['F'])
