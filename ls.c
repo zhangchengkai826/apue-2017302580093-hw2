@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include "common.h"
 #include "getopt.h"
+#include "math.h"
 #define MID_SIZE 8
 #define LINE_MAX 1024
 
@@ -142,8 +143,8 @@ int get_blkcnt(const char *fn, char *szblkcnt) {
   blkcnt = statbuf.st_blocks;
   blksize = getenv("BLOCKSIZE");
   if(blksize) {
-    float ratio = atoi(blksize) / 512.f;
-    blkcnt = ceilf(blkcnt / ratio);
+    double ratio = 512.f / atoi(blksize);
+    blkcnt = (int)ceil(blkcnt*ratio);
   }
   if(szblkcnt)
     sprintf(szblkcnt, "%d", blkcnt);
