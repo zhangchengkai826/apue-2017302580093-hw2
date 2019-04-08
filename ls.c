@@ -134,6 +134,28 @@ int get_mlen_szino(struct Vector *v) {
   return mlen;
 }
 
+void blkcnt2sz(int blkcnt, char *szblkcnt) {
+  double val;
+  char *blksize = getenv("BLOCKSIZE");
+  if(blksize)
+    val = (double)atoi(blksize) * blkcnt;
+  else
+    val = 512. * blkcnt; 
+  
+  if(opts['h']) {
+    char units[] = "BKMGTPEZY";
+    int i;
+    for(i = 0; i < (int)strlen(units) && val/1024. >= 1.; i++, val /= 1024.);
+    sprintf(szblkcnt, "%.1f%c", val, units[i]);
+  } else if(opts['k']) {
+    val /= 1024.;
+    sprintf(szblkcnt, "%.1fK", val);
+  } else {
+    sprintf(szblkcnt, "%d", blkcnt);
+  }
+}
+
+/* ret val is always blkcnt, szblkcnt will be affected by -hk */
 int get_blkcnt(const char *fn, char *szblkcnt) {
   char *blksize;
   int blkcnt;
@@ -147,7 +169,7 @@ int get_blkcnt(const char *fn, char *szblkcnt) {
     blkcnt = (int)ceil(blkcnt*ratio);
   }
   if(szblkcnt)
-    sprintf(szblkcnt, "%d", blkcnt);
+    blkcnt2sz(blkcnt, szblkcnt);
   return blkcnt;
 }
 
@@ -163,6 +185,13 @@ int get_mlen_szblkcnt(struct Vector *v) {
   return mlen;
 }
 
+int get_sum_blkcnt(struct Vector *v) {
+  int sum = 0, i;
+  for(i = 0; i < (int)v->n; i++)
+    sum += get_blkcnt(v->d[i], NULL);
+  return sum;
+}
+
 void print_them(struct Vector *v, const char *blk_name) { 
   int i;
   char oldwd[LINE_MAX]; /* old working dir */
@@ -174,6 +203,11 @@ void print_them(struct Vector *v, const char *blk_name) {
   mlen_szblkcnt = get_mlen_szblkcnt(v);
   if(blk_name != NULL)
     printf("%s:\n", blk_name);
+  if(opts['s']) {
+    char szblkcnt[LINE_MAX];
+    blkcnt2sz(get_sum_blkcnt(v), szblkcnt);
+    printf("total %s\n", szblkcnt);
+  }
 
   for(i = 0; i < (int)v->n; i++) {
     char fmt; /* file format */
@@ -216,8 +250,11 @@ void print_them(struct Vector *v, const char *blk_name) {
     n = 0; 
     if(opts['i'])
       n += sprintf(info + n, "%*ld ", mlen_szino, get_ino(fn, NULL)); 
-    if(opts['s'])
-      n += sprintf(info + n, "%*d ", mlen_szblkcnt, get_blkcnt(fn, NULL));
+    if(opts['s']) {
+      char szblkcnt[LINE_MAX];
+      get_blkcnt(fn, szblkcnt);
+      n += sprintf(info + n, "%*s ", mlen_szblkcnt, szblkcnt);
+    }
     if(!opts['F'])
       tag[0] = '\0';
     sprintf(info + n, "%s%s", fn, tag);
@@ -253,6 +290,8 @@ int main(int argc, char *argv[]) {
       opts['l'] = opts['C'] = opts['1'] = opts['n'] = opts['x'] = 0;
     else if(opt == 'c' || opt == 'u')
       opts['c'] = opts['u'] = 0;
+    else if(opt == 'h' || opt == 'k')
+      opts['h'] = opts['k'] = 0;
     opts[opt] = 1;
     hsopt = 1;
   }
