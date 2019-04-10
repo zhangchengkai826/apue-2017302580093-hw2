@@ -1,5 +1,6 @@
 #include <dirent.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include "common.h"
 #include "getopt.h"
 #include "math.h"
@@ -192,10 +193,46 @@ int get_sum_blkcnt(struct Vector *v) {
   return sum;
 }
 
+/* normalize file name */
+char *nmfn(char *fn) {
+  if(opts['q']) {
+    char *p;
+    p = fn;
+    while(*p) {
+      if(!isprint(*p))
+        *p = '?';
+      p++;
+    }
+  }
+  return fn;
+}
+
+/* get max strlen in a string Vector */
+int get_mlen_sv(const struct Vector *v) {
+  int i, mlen;
+  mlen = 0;
+  for(i = 0; i < (int)v->n; i++) {
+    int n;
+    n = strlen(v->d[i]);
+    if(n > mlen)
+      mlen = n;
+  }
+  return mlen;
+}
+
+int get_tty_wid() {
+  struct winsize w;
+  ioctl(0, TIOCGWINSZ, &w);
+  return w.ws_col;
+}
+
 void print_them(struct Vector *v, const char *blk_name) { 
   int i;
   char oldwd[LINE_MAX]; /* old working dir */
   int mlen_szino, mlen_szblkcnt; 
+  struct Vector mcv; /* used for multi-col print */
+
+  init_vec(&mcv, MID_SIZE);
   getcwd(oldwd, sizeof(oldwd));
   chdir(blk_name);
 
@@ -203,7 +240,7 @@ void print_them(struct Vector *v, const char *blk_name) {
   mlen_szblkcnt = get_mlen_szblkcnt(v);
   if(blk_name != NULL)
     printf("%s:\n", blk_name);
-  if(opts['s']) {
+  if((opts['s'] && is_trmnl) || opts['l']) {
     char szblkcnt[LINE_MAX];
     blkcnt2sz(get_sum_blkcnt(v), szblkcnt);
     printf("total %s\n", szblkcnt);
@@ -257,12 +294,23 @@ void print_them(struct Vector *v, const char *blk_name) {
     }
     if(!opts['F'])
       tag[0] = '\0';
-    sprintf(info + n, "%s%s", fn, tag);
+    sprintf(info + n, "%s%s", nmfn(fn), tag);
     if(opts['1'])
       printf("%s\n", info);
+    else if(opts['C'] || opts['x'])
+      appends_vec(&mcv, info);
   }
+
+  if(mcv.n > 0 && (opts['C'] || opts['x'])) {
+    int nc; /* number of cols */
+    nc = get_tty_wid() / (get_mlen_sv(&mcv) + 1);
+
+    
+  }
+
   printf("\n");
   chdir(oldwd);
+  free_vec(&mcv);
 }
 
 int main(int argc, char *argv[]) {
