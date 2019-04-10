@@ -302,10 +302,28 @@ void print_them(struct Vector *v, const char *blk_name) {
   }
 
   if(mcv.n > 0 && (opts['C'] || opts['x'])) {
-    int nc; /* number of cols */
-    nc = get_tty_wid() / (get_mlen_sv(&mcv) + 1);
-
-    
+    int mlen, nc, nr; /* number of cols-rows */
+    mlen = get_mlen_sv(&mcv);
+    nc = get_tty_wid() / (mlen + 1);
+    if(mcv.n % nc == 0)
+      nr = mcv.n / nc;
+    else
+      nr = mcv.n / nc + 1;
+    for(i = 0; i < nc*nr; i++) {
+      if(opts['x']) {
+        if(i < (int)mcv.n)
+          printf("%-*s ", mlen, (char*)mcv.d[i]);
+      } else if(opts['C']) {
+        int id;
+        id = nr*(i%nc) + i/nc;
+        if(id < (int)mcv.n)
+          printf("%-*s ", mlen, (char*)mcv.d[id]);
+        else
+          printf("%-*s ", mlen, "");
+      }
+      if(i%nc+1 == nc)
+        printf("\n");
+    }        
   }
 
   printf("\n");
