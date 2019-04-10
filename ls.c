@@ -109,7 +109,6 @@ void getlf(char *buf, size_t n, const char *fn) { /* get long-format str */
 
 static bool opts[128];
 static bool is_trmnl; /* is_stdout_terminal? */
-static struct Vector nrml, dirs; /* variable array for normal files & dirs */
 static cmpfunc cf;
 static enum SORT_ORDER odr;
 
@@ -232,9 +231,9 @@ void print_them(struct Vector *v, const char *blk_name) {
   int mlen_szino, mlen_szblkcnt; 
   struct Vector mcv; /* used for multi-col print */
 
-  init_vec(&mcv, MID_SIZE);
   getcwd(oldwd, sizeof(oldwd));
   chdir(blk_name);
+  init_vec(&mcv, MID_SIZE);
 
   mlen_szino = get_mlen_szino(v);
   mlen_szblkcnt = get_mlen_szblkcnt(v);
@@ -327,13 +326,55 @@ void print_them(struct Vector *v, const char *blk_name) {
   }
 
   printf("\n");
-  chdir(oldwd);
   free_vec(&mcv);
+
+  if(opts['R']) {
+    struct Vector nrml, dirs;
+    struct stat statbuf;
+    init_vec(&nrml, MID_SIZE);
+    init_vec(&dirs, MID_SIZE);
+
+    for(i = 0; i < (int)v->n; i++) {
+      char *fn;
+      fn = v->d[i];
+      if(lstat(fn, &statbuf) == -1) {
+        err_ret("ls: cannot access \'%s\'", fn);
+        continue;
+      }
+      if(S_ISDIR(statbuf.st_mode))
+        appends_vec(&dirs, fn);
+    }
+
+    for(i = 0; i < (int)dirs.n; i++) {
+      DIR *dp;
+      struct dirent *dirp;
+      free_vec(&nrml);
+      init_vec(&nrml, MID_SIZE);
+      if((dp = opendir(dirs.d[i])) == NULL) {
+        err_ret("ls: cannot access \'%s\'", dirs.d[i]);
+        continue;
+      }
+      while((dirp = readdir(dp)) != NULL) {
+        char *fn; /* directory entry name */
+        fn = dirp->d_name;
+        if(opts['a'] || (opts['A'] && strcmp(fn, ".") && strcmp(fn, "..")) || fn[0] != '.')
+          appends_vec(&nrml, fn);
+      }
+      sort_vec(&nrml, cf, odr);
+      print_them(&nrml, dirs.d[i]);
+    }
+
+    free_vec(&nrml);
+    free_vec(&dirs);
+  }
+
+  chdir(oldwd);
 }
 
 int main(int argc, char *argv[]) {
   int opt, i;
   bool hsopt = 0;
+  struct Vector nrml, dirs; 
   if(isatty(STDOUT_FILENO))
     is_trmnl = 1;
   else
