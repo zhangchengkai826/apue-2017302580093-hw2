@@ -225,6 +225,82 @@ int get_tty_wid() {
   return w.ws_col;
 }
 
+char *get_perm(const char *fn, char buf[]) {
+  struct stat statbuf;
+  mode_t m;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  m = statbuf.st_mode;
+  
+  if(m & S_IRUSR)
+    buf[0] = 'r';
+  else
+    buf[0] = '-';
+  
+  if(m & S_IWUSR)
+    buf[1] = 'w';
+  else
+    buf[1] = '-';
+  
+  if(m & S_IXUSR) {
+    if(m & S_ISUID)
+      buf[2] = 's';
+    else
+      buf[2] = 'x';
+  } else {
+    if(m & S_ISUID)
+      buf[2] = 'S';
+    else
+      buf[2] = '-';
+  }
+
+  if(m & S_IRGRP)
+    buf[3] = 'r';
+  else
+    buf[3] = '-';
+
+  if(m & S_IWGRP)
+    buf[4] = 'w';
+  else
+    buf[4] = '-';
+
+  if(m & S_IXGRP) {
+    if(m & S_ISGID) 
+      buf[5] = 's';
+    else
+      buf[5] = 'x';
+  } else {
+    if(m & S_ISGID)
+      buf[5] = 'S';
+    else
+      buf[5] = '-';
+  }
+
+  if(m & S_IROTH)
+    buf[6] = 'r';
+  else
+    buf[6] = '-';
+  
+  if(m & S_IWOTH)
+    buf[7] = 'w';
+  else
+    buf[7] = '-';
+
+  if(m & S_IXOTH) {
+    if(m & __S_ISVTX)
+      buf[8] = 't';
+    else
+      buf[8] = 'x';
+  } else {
+    if(m & __S_ISVTX)
+      buf[8] = 'T';
+    else 
+      buf[8] = '-';
+  } 
+  buf[9] = 0;
+  return buf;
+}
+
 void print_them(struct Vector *v, const char *blk_name) { 
   int i;
   char oldwd[LINE_MAX]; /* old working dir */
@@ -293,12 +369,20 @@ void print_them(struct Vector *v, const char *blk_name) {
     }
     if(!opts['F'])
       tag[0] = '\0';
-    sprintf(info + n, "%s%s", fn, tag);
-    nmfn(info);
-    if(opts['1'])
-      printf("%s\n", info);
-    else if(opts['C'] || opts['x'])
-      appends_vec(&mcv, info);
+    if(opts['l'] || opts['n']) {
+      char perm[10];
+      get_perm(fn, perm);
+      n += sprintf(info + n, "%c", fmt);
+      n += sprintf(info + n, "%s ", perm);
+      sprintf(info + n, "%s%s", fn, tag);
+      printf("%s\n", nmfn(info));
+    } else {
+      sprintf(info + n, "%s%s", fn, tag);
+      if(opts['1'])
+        printf("%s\n", nmfn(info));
+      else if(opts['C'] || opts['x'])
+        appends_vec(&mcv, nmfn(info));
+    }
   }
 
   if(mcv.n > 0 && (opts['C'] || opts['x'])) {
