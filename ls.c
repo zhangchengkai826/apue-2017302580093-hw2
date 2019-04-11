@@ -550,7 +550,38 @@ void print_them(struct Vector *v, const char *blk_name) {
       } 
       snprintf(info + n, 13, "%s", ctime(&statbuf.st_mtime)+4);
       n += 12;
-      sprintf(info + n, " %s%s", fn, tag);
+      if(S_ISLNK(statbuf.st_mode)) {
+        char lnktarg[LINE_MAX];
+        struct stat rstat;
+        memset(lnktarg, 0, LINE_MAX);
+        if(readlink(fn, lnktarg, LINE_MAX) == -1)
+          err_ret("ls: cannot access \'%s\'", fn);
+        if(stat(fn, &rstat) < 0) 
+          err_ret("ls: cannot access \'%s\'", fn);
+        switch(rstat.st_mode & __S_IFMT) {
+          case __S_IFREG:
+            if(rstat.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))
+              tag[0] = '*';
+            break;
+          case __S_IFDIR:
+            tag[0] = '/';
+            break;
+          case __S_IFLNK:
+            tag[0] = '@';
+            break;
+          case __S_IFSOCK:
+            tag[0] = '=';
+            break;
+          case __S_IFIFO:
+            tag[0] = '|';
+            break;
+        }
+        if(!opts['F'])
+          tag[0] = 0;
+        sprintf(info + n, " %s -> %s%s", fn, lnktarg, tag);
+      } else {
+        sprintf(info + n, " %s%s", fn, tag);
+      }
       printf("%s\n", nmfn(info));
     } else {
       sprintf(info + n, "%s%s", fn, tag);
