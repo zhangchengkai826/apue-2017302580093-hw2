@@ -136,6 +136,54 @@ int get_mlen_szino(struct Vector *v) {
   return mlen;
 }
 
+long get_usr(const char *fn, char *szusr) {
+  struct stat statbuf;
+  struct passwd *usr;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  usr = getpwuid(statbuf.st_uid);
+  if(usr == NULL || opts['n'])
+    sprintf(szusr, "%u ", statbuf.st_uid);
+  else
+    sprintf(szusr, "%s ", usr->pw_name);
+  return statbuf.st_uid;
+}
+
+int get_mlen_szusr(struct Vector *v) {
+  int mlen = 0, i;
+  for(i = 0; i < (int)v->n; i++) {
+    char szusr[LINE_MAX];
+    get_usr(v->d[i], szusr);
+    if((int)strlen(szusr) > mlen)
+      mlen = strlen(szusr);
+  }
+  return mlen;
+}
+
+long get_grp(const char *fn, char *szgrp) {
+  struct stat statbuf;
+  struct group *grp;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  grp = getgrgid(statbuf.st_gid);
+  if(grp == NULL || opts['n'])
+    sprintf(szgrp, "%u ", statbuf.st_gid);
+  else
+    sprintf(szgrp, "%s ", grp->gr_name);
+  return statbuf.st_gid;
+}
+
+int get_mlen_szgrp(struct Vector *v) {
+  int mlen = 0, i;
+  for(i = 0; i < (int)v->n; i++) {
+    char szgrp[LINE_MAX];
+    get_grp(v->d[i], szgrp);
+    if((int)strlen(szgrp) > mlen)
+      mlen = strlen(szgrp);
+  }
+  return mlen;
+}
+
 void blkcnt2sz(int blkcnt, char *szblkcnt) {
   double val;
   char *blksize = getenv("BLOCKSIZE");
@@ -306,7 +354,7 @@ char *get_perm(const char *fn, char buf[]) {
 void print_them(struct Vector *v, const char *blk_name) { 
   int i;
   char oldwd[LINE_MAX]; /* old working dir */
-  int mlen_szino, mlen_szblkcnt; 
+  int mlen_szino, mlen_szblkcnt, mlen_szusr, mlen_szgrp;
   struct Vector mcv; /* used for multi-col print */
 
   getcwd(oldwd, sizeof(oldwd));
@@ -315,6 +363,8 @@ void print_them(struct Vector *v, const char *blk_name) {
 
   mlen_szino = get_mlen_szino(v);
   mlen_szblkcnt = get_mlen_szblkcnt(v);
+  mlen_szusr = get_mlen_szusr(v);
+  mlen_szgrp = get_mlen_szgrp(v);
   if(blk_name != NULL)
     printf("%s:\n", blk_name);
   if((opts['s'] && is_trmnl) || opts['l']) {
@@ -372,23 +422,14 @@ void print_them(struct Vector *v, const char *blk_name) {
     if(!opts['F'])
       tag[0] = '\0';
     if(opts['l'] || opts['n']) {
-      char perm[10];
-      struct passwd *usr;
-      struct group *grp;
+      char perm[10], usr[LINE_MAX], grp[LINE_MAX];
       get_perm(fn, perm);
+      get_usr(fn, usr);
+      get_grp(fn, grp);
       n += sprintf(info + n, "%c", fmt);
       n += sprintf(info + n, "%s ", perm);
       n += sprintf(info + n, "%lu ", statbuf.st_nlink);
-      usr = getpwuid(statbuf.st_uid);
-      if(usr == NULL || opts['n'])
-        n += sprintf(info + n, "%u ", statbuf.st_uid);
-      else
-        n += sprintf(info + n, "%s ", usr->pw_name);
-      grp = getgrgid(statbuf.st_gid); 
-      if(grp == NULL || opts['n'])
-        n += sprintf(info + n, "%u ", statbuf.st_gid);
-      else
-        n += sprintf(info + n, "%s ", grp->gr_name);
+      n += sprintf(info + n, "%*s %*s ", mlen_szusr, usr, mlen_szgrp, grp);
       sprintf(info + n, "%s%s", fn, tag);
       printf("%s\n", nmfn(info));
     } else {
