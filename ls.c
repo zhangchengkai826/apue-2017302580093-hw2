@@ -4,6 +4,8 @@
 #include "common.h"
 #include "getopt.h"
 #include "math.h"
+#include "pwd.h"
+#include "grp.h"
 #define MID_SIZE 8
 #define LINE_MAX 1024
 
@@ -371,9 +373,22 @@ void print_them(struct Vector *v, const char *blk_name) {
       tag[0] = '\0';
     if(opts['l'] || opts['n']) {
       char perm[10];
+      struct passwd *usr;
+      struct group *grp;
       get_perm(fn, perm);
       n += sprintf(info + n, "%c", fmt);
       n += sprintf(info + n, "%s ", perm);
+      n += sprintf(info + n, "%lu ", statbuf.st_nlink);
+      usr = getpwuid(statbuf.st_uid);
+      if(usr == NULL || opts['n'])
+        n += sprintf(info + n, "%u ", statbuf.st_uid);
+      else
+        n += sprintf(info + n, "%s ", usr->pw_name);
+      grp = getgrgid(statbuf.st_gid); 
+      if(grp == NULL || opts['n'])
+        n += sprintf(info + n, "%u ", statbuf.st_gid);
+      else
+        n += sprintf(info + n, "%s ", grp->gr_name);
       sprintf(info + n, "%s%s", fn, tag);
       printf("%s\n", nmfn(info));
     } else {
