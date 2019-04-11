@@ -105,6 +105,18 @@ int cf_lex(void *a, void *b) {
 
 static bool opts[128];
 
+int cf_s(void *a, void *b) {
+  struct stat astat, bstat;
+  if(lstat(a, &astat) < 0) 
+    err_ret("ls: cannot access \'%s\'", a);
+  if(lstat(b, &bstat) < 0) 
+    err_ret("ls: cannot access \'%s\'", b);
+  if(astat.st_size == bstat.st_size)
+    return cf_lex(a, b);
+  else
+    return bstat.st_size - astat.st_size;
+}
+ 
 int cf_t(void *a, void *b) {
   struct stat astat, bstat;
   if(lstat(a, &astat) < 0) 
@@ -716,8 +728,8 @@ int main(int argc, char *argv[]) {
       opts['w'] = opts['q'] = 0;
     else if(opt == 'l' || opt == 'C' || opt == '1' || opt == 'n' || opt == 'x')
       opts['l'] = opts['C'] = opts['1'] = opts['n'] = opts['x'] = 0;
-    else if(opt == 'c' || opt == 'u')
-      opts['c'] = opts['u'] = 0;
+    else if(opt == 't' || opt == 'c' || opt == 'u' || opt == 'S' || opt == 'f')
+      opts['t'] = opts['c'] = opts['u'] = opts['S'] = opts['f'] = 0;
     else if(opt == 'h' || opt == 'k')
       opts['h'] = opts['k'] = 0;
     opts[opt] = 1;
@@ -765,6 +777,8 @@ int main(int argc, char *argv[]) {
     cf = NULL;
   else if(opts['t'] || opts['u'] || opts['c'])
     cf = cf_t;
+  else if(opts['S'])
+    cf = cf_s;
   
   if(opts['r']) {
     if(odr == ASC)
