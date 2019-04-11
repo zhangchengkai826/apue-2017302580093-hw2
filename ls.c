@@ -103,14 +103,32 @@ int cf_lex(void *a, void *b) {
   return strcmp(a, b);
 }
 
-void getlf(char *buf, size_t n, const char *fn) { /* get long-format str */
-  struct stat statbuf;
-  if(lstat(fn, &statbuf) == -1)
-    err_ret("ls: cannot access \'%s\'", fn);
-  
+static bool opts[128];
+
+int cf_t(void *a, void *b) {
+  struct stat astat, bstat;
+  if(lstat(a, &astat) < 0) 
+    err_ret("ls: cannot access \'%s\'", a);
+  if(lstat(b, &bstat) < 0) 
+    err_ret("ls: cannot access \'%s\'", b);
+  if(opts['u']) {
+    if(astat.st_atime == bstat.st_atime)
+      return cf_lex(a, b);
+    else 
+      return bstat.st_atime - astat.st_atime;
+  } else if(opts['c']) {
+    if(astat.st_ctime == bstat.st_ctime)
+      return cf_lex(a, b);
+    else 
+      return bstat.st_ctime - astat.st_ctime;
+  } else {
+    if(astat.st_mtime == bstat.st_mtime)
+      return cf_lex(a, b);
+    else 
+      return bstat.st_mtime - astat.st_mtime;
+  }
 }
 
-static bool opts[128];
 static bool is_trmnl; /* is_stdout_terminal? */
 static cmpfunc cf;
 static enum SORT_ORDER odr;
@@ -547,8 +565,13 @@ void print_them(struct Vector *v, const char *blk_name) {
       } else {
         get_size(fn, size);
         n += sprintf(info + n, "%*s ", mlen_szsize, size);
-      } 
-      snprintf(info + n, 13, "%s", ctime(&statbuf.st_mtime)+4);
+      }
+      if(opts['u'])
+        snprintf(info + n, 13, "%s", ctime(&statbuf.st_atime)+4);
+      else if(opts['c'])
+        snprintf(info + n, 13, "%s", ctime(&statbuf.st_ctime)+4);
+      else   
+        snprintf(info + n, 13, "%s", ctime(&statbuf.st_mtime)+4);
       n += 12;
       if(S_ISLNK(statbuf.st_mode)) {
         char lnktarg[LINE_MAX];
@@ -740,6 +763,8 @@ int main(int argc, char *argv[]) {
   odr = ASC;
   if(opts['f'])
     cf = NULL;
+  else if(opts['t'] || opts['u'] || opts['c'])
+    cf = cf_t;
   
   if(opts['r']) {
     if(odr == ASC)
