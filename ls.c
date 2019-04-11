@@ -6,6 +6,7 @@
 #include "math.h"
 #include "pwd.h"
 #include "grp.h"
+#include "time.h"
 #define MID_SIZE 8
 #define LINE_MAX 1024
 
@@ -547,7 +548,9 @@ void print_them(struct Vector *v, const char *blk_name) {
         get_size(fn, size);
         n += sprintf(info + n, "%*s ", mlen_szsize, size);
       } 
-      sprintf(info + n, "%s%s", fn, tag);
+      snprintf(info + n, 13, "%s", ctime(&statbuf.st_mtime)+4);
+      n += 12;
+      sprintf(info + n, " %s%s", fn, tag);
       printf("%s\n", nmfn(info));
     } else {
       sprintf(info + n, "%s%s", fn, tag);
