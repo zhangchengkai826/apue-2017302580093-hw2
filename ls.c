@@ -184,6 +184,104 @@ int get_mlen_szgrp(struct Vector *v) {
   return mlen;
 }
 
+long get_nlnk(const char *fn, char *sznlnk) {
+  struct stat statbuf;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  sprintf(sznlnk, "%ld", statbuf.st_nlink);
+  return statbuf.st_nlink;
+}
+
+int get_mlen_sznlnk(struct Vector *v) {
+  int mlen = 0, i;
+  for(i = 0; i < (int)v->n; i++) {
+    char sznlnk[LINE_MAX];
+    get_nlnk(v->d[i], sznlnk);
+    if((int)strlen(sznlnk) > mlen)
+      mlen = strlen(sznlnk);
+  }
+  return mlen;
+}
+
+long get_size(const char *fn, char *szsize) {
+  struct stat statbuf;
+  double val;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  val = (double)statbuf.st_size;
+  if(opts['h']) {
+    char units[] = "BKMGTPEZY";
+    int i;
+    for(i = 0; i < (int)strlen(units) && val/1024. >= 1.; i++, val /= 1024.);
+    sprintf(szsize, "%.1f%c", val, units[i]);
+  } else if(opts['k']) {
+    val /= 1024.;
+    sprintf(szsize, "%.1fK", val);
+  } else {
+    sprintf(szsize, "%ld", statbuf.st_size);
+  }
+  return statbuf.st_size;
+}
+
+int get_mlen_szsize(struct Vector *v) {
+  int mlen = 0, i;
+  for(i = 0; i < (int)v->n; i++) {
+    char szsize[LINE_MAX];
+    get_size(v->d[i], szsize);
+    if((int)strlen(szsize) > mlen)
+      mlen = strlen(szsize);
+  }
+  return mlen;
+}
+
+long get_major(const char *fn, char *szmajor) {
+  struct stat statbuf;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  if(S_ISBLK(statbuf.st_mode) || S_ISCHR(statbuf.st_mode)) {
+    sprintf(szmajor, "%u", major(statbuf.st_rdev));
+    return major(statbuf.st_rdev);
+  } else {
+    sprintf(szmajor, "%s", "");
+    return -1;
+  }
+}
+
+int get_mlen_szmajor(struct Vector *v) {
+  int mlen = 0, i;
+  for(i = 0; i < (int)v->n; i++) {
+    char szmajor[LINE_MAX];
+    get_major(v->d[i], szmajor);
+    if((int)strlen(szmajor) > mlen)
+      mlen = strlen(szmajor);
+  }
+  return mlen;
+}
+
+long get_minor(const char *fn, char *szminor) {
+  struct stat statbuf;
+  if(lstat(fn, &statbuf) < 0) 
+    err_ret("ls: cannot access \'%s\'", fn);
+  if(S_ISBLK(statbuf.st_mode) || S_ISCHR(statbuf.st_mode)) {
+    sprintf(szminor, "%u", minor(statbuf.st_rdev));
+    return minor(statbuf.st_rdev);
+  } else {
+    sprintf(szminor, "%s", "");
+    return -1;
+  }
+}
+
+int get_mlen_szminor(struct Vector *v) {
+  int mlen = 0, i;
+  for(i = 0; i < (int)v->n; i++) {
+    char szminor[LINE_MAX];
+    get_minor(v->d[i], szminor);
+    if((int)strlen(szminor) > mlen)
+      mlen = strlen(szminor);
+  }
+  return mlen;
+}
+
 void blkcnt2sz(int blkcnt, char *szblkcnt) {
   double val;
   char *blksize = getenv("BLOCKSIZE");
@@ -354,7 +452,8 @@ char *get_perm(const char *fn, char buf[]) {
 void print_them(struct Vector *v, const char *blk_name) { 
   int i;
   char oldwd[LINE_MAX]; /* old working dir */
-  int mlen_szino, mlen_szblkcnt, mlen_szusr, mlen_szgrp;
+  int mlen_szino, mlen_szblkcnt, mlen_szusr, mlen_szgrp, mlen_sznlnk;
+  int mlen_szsize, mlen_szmajor, mlen_szminor, mlen_szmajmin;
   struct Vector mcv; /* used for multi-col print */
 
   getcwd(oldwd, sizeof(oldwd));
@@ -365,6 +464,14 @@ void print_them(struct Vector *v, const char *blk_name) {
   mlen_szblkcnt = get_mlen_szblkcnt(v);
   mlen_szusr = get_mlen_szusr(v);
   mlen_szgrp = get_mlen_szgrp(v);
+  mlen_sznlnk = get_mlen_sznlnk(v);
+  mlen_szsize = get_mlen_szsize(v);
+  mlen_szmajor = get_mlen_szmajor(v);
+  mlen_szminor = get_mlen_szminor(v);
+  mlen_szmajmin = mlen_szmajor + mlen_szminor + 2;
+  mlen_szsize = (mlen_szsize > mlen_szmajmin) ? mlen_szsize : mlen_szmajmin;
+  mlen_szmajor = mlen_szsize - mlen_szminor - 2;
+
   if(blk_name != NULL)
     printf("%s:\n", blk_name);
   if((opts['s'] && is_trmnl) || opts['l']) {
@@ -422,14 +529,24 @@ void print_them(struct Vector *v, const char *blk_name) {
     if(!opts['F'])
       tag[0] = '\0';
     if(opts['l'] || opts['n']) {
-      char perm[10], usr[LINE_MAX], grp[LINE_MAX];
+      char perm[10], nlnk[LINE_MAX], usr[LINE_MAX], grp[LINE_MAX];
+      char size[LINE_MAX], major[LINE_MAX], minor[LINE_MAX];
       get_perm(fn, perm);
+      get_nlnk(fn, nlnk);
       get_usr(fn, usr);
       get_grp(fn, grp);
       n += sprintf(info + n, "%c", fmt);
       n += sprintf(info + n, "%s ", perm);
-      n += sprintf(info + n, "%lu ", statbuf.st_nlink);
+      n += sprintf(info + n, "%*s ", mlen_sznlnk, nlnk);
       n += sprintf(info + n, "%*s %*s ", mlen_szusr, usr, mlen_szgrp, grp);
+      if(fmt == 'b' || fmt == 'c') { 
+        get_major(fn, major);
+        get_minor(fn, minor);
+        n += sprintf(info + n, "%*s, %*s ", mlen_szmajor, major, mlen_szminor, minor);
+      } else {
+        get_size(fn, size);
+        n += sprintf(info + n, "%*s ", mlen_szsize, size);
+      } 
       sprintf(info + n, "%s%s", fn, tag);
       printf("%s\n", nmfn(info));
     } else {
@@ -506,6 +623,7 @@ void print_them(struct Vector *v, const char *blk_name) {
         if(opts['a'] || (opts['A'] && strcmp(fn, ".") && strcmp(fn, "..")) || fn[0] != '.')
           appends_vec(&nrml, fn);
       }
+      closedir(dp);
       sort_vec(&nrml, cf, odr);
       print_them(&nrml, dirs.d[i]);
     }
@@ -615,6 +733,7 @@ int main(int argc, char *argv[]) {
       if(opts['a'] || (opts['A'] && strcmp(fn, ".") && strcmp(fn, "..")) || fn[0] != '.')
         appends_vec(&nrml, fn);
     }
+    closedir(dp);
     sort_vec(&nrml, cf, odr);
     print_them(&nrml, dirs.d[i]);
   }
