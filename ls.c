@@ -293,7 +293,8 @@ void print_them(struct Vector *v, const char *blk_name) {
     }
     if(!opts['F'])
       tag[0] = '\0';
-    sprintf(info + n, "%s%s", nmfn(fn), tag);
+    sprintf(info + n, "%s%s", fn, tag);
+    nmfn(info);
     if(opts['1'])
       printf("%s\n", info);
     else if(opts['C'] || opts['x'])
@@ -304,24 +305,29 @@ void print_them(struct Vector *v, const char *blk_name) {
     int mlen, nc, nr; /* number of cols-rows */
     mlen = get_mlen_sv(&mcv);
     nc = get_tty_wid() / (mlen + 1);
-    if(mcv.n % nc == 0)
-      nr = mcv.n / nc;
-    else
-      nr = mcv.n / nc + 1;
-    for(i = 0; i < nc*nr; i++) {
-      if(opts['x']) {
-        if(i < (int)mcv.n)
-          printf("%-*s ", mlen, (char*)mcv.d[i]);
-      } else if(opts['C']) {
-        int id;
-        id = nr*(i%nc) + i/nc;
-        if(id < (int)mcv.n)
-          printf("%-*s ", mlen, (char*)mcv.d[id]);
-        else
-          printf("%-*s ", mlen, "");
+    if(nc == 0) {
+      for(i = 0; i < (int)mcv.n; i++) 
+        printf("%s\n", (char*)mcv.d[i]);
+    } else {
+      if(mcv.n % nc == 0)
+        nr = mcv.n / nc;
+      else
+        nr = mcv.n / nc + 1;
+      for(i = 0; i < nc*nr; i++) {
+        if(opts['x']) {
+          if(i < (int)mcv.n)
+            printf("%-*s ", mlen, (char*)mcv.d[i]);
+        } else if(opts['C']) {
+          int id;
+          id = nr*(i%nc) + i/nc;
+          if(id < (int)mcv.n)
+            printf("%-*s ", mlen, (char*)mcv.d[id]);
+          else
+            printf("%-*s ", mlen, "");
+        }
+        if(i%nc+1 == nc)
+          printf("\n");
       }
-      if(i%nc+1 == nc)
-        printf("\n");
     }        
   }
 
