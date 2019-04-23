@@ -1,0 +1,7 @@
+### Design ###
+1. Group commands with similar functionalities together.
+   e.g. -t -u -c are implemented together.
+2. Use compare functions as parameters to reduce redundancy.
+
+### Test ###
+
