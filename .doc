@@ -2,6 +2,9 @@
 1. Group commands with similar functionalities together.
    e.g. -t -u -c are implemented together.
 2. Use compare functions as parameters to reduce redundancy.
+3. Implement my own variable length array data structure.
 
 ### Test ###
+Run "make test" or "./test.sh"
+You can also directly check the test output generated on my computer in test.out
 
