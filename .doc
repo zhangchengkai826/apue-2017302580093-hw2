@@ -5,6 +5,7 @@
 3. Implement my own variable length array data structure.
 
 ### Test ###
-Run "make test" or "./test.sh"
+First run "./makelstest" to create test directory.
+Then run "make test" or "./test.sh".
 You can also directly check the test output generated on my computer in test.out
 

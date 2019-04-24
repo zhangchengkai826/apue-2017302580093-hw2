@@ -1,0 +1,221 @@
+commit fb1d50bb632a0e023dd2b13f405ffcc3b04d72a0
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Apr 24 16:04:26 2019 +0800
+
+    finish all
+
+commit dbfff31a0ba98c7fb741acf32b1cb6a3bd186b5c
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Apr 24 15:50:28 2019 +0800
+
+    ls.c: bug fix
+
+commit 5cff0d84e369f4706bf2ce439020fdfb5f4a10ba
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Tue Apr 23 23:25:01 2019 +0800
+
+    doc
+
+commit 6238b655901256ff8feb9f34ab7028f2419b6568
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Mon Apr 15 13:40:53 2019 +0800
+
+    README.md: refine
+
+commit 358f3f1866a5eaf01efeae97187119eaf48c6ed8
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 18:59:33 2019 +0800
+
+    ls.c: -S finish
+
+commit adc87d81c317bf06fa94d7caf52beec78e25cc0f
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 18:50:31 2019 +0800
+
+    ls.c: -tuc finish
+
+commit cd78a6a927caf9779923c1f68c2106a0799b7644
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 17:19:18 2019 +0800
+
+    ls.c: -l finish
+
+commit 79f6e835fb6959c1517e50d81e6c4ae7bb25d76d
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 16:59:06 2019 +0800
+
+    ls.c: -l time support
+
+commit 17eec87f7c97e24aef09fa015c6b6d87e7a4b2c4
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 12:07:31 2019 +0800
+
+    ls.c: -l size & rdev, test ./ls -Rl /
+
+commit ca6545e2b30aef4f9a6946404b9338ef890b1399
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 11:08:46 2019 +0800
+
+    ls.c: -ln usr & grp align finish
+
+commit 8eb126e862b06274136c0412ea8cd105b711bdee
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 09:52:50 2019 +0800
+
+    ls.c: simple usr & grp print
+
+commit cc86527b6495028ede289d858864db199fc03c6b
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 09:20:32 2019 +0800
+
+    ls.c: ls -l perm finish
+
+commit 90e41f639e3750966300a10e605b5be1e5ec5a86
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 11 08:27:20 2019 +0800
+
+    ls.c: fix bug in -RCx
+
+commit 3691d0167a172b7c9749ac0eecba04c9b568e3fb
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Apr 10 19:26:34 2019 +0800
+
+    ls.c: recursing p1
+
+commit 1b7386db04e0a8625ee3936b7196b9b586327efd
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Apr 10 18:59:34 2019 +0800
+
+    ls.c: multi-col support added
+
+commit 5565f4418a1ac17c46f89967f4f38b3a96ca8d72
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Apr 10 17:02:32 2019 +0800
+
+    ls.c: add multi-col support p1
+
+commit bc13c02879b89ac35c64104227d2642f3d101396
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Mon Apr 8 17:19:01 2019 +0800
+
+    ls.c implement -hk
+
+commit af0d66dfe884acd2567ae6a4b48892f10c189f22
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Mon Apr 8 16:04:35 2019 +0800
+
+    ls.c: -s is aware of BLOCKSIZE
+
+commit f20b9634c32182242d451e88caaf6f7b0b33a3f3
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Mon Apr 8 15:50:36 2019 +0800
+
+    ls.c: -is strlen fixed
+
+commit 59558438eb89492199a9e99257a0c5284960f460
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Mon Apr 8 15:40:29 2019 +0800
+
+    ls.c: simple -i & -s implementation
+
+commit ec7da6bef74bf421ec182bf013904b1773149c6f
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Mon Apr 8 11:38:57 2019 +0800
+
+    add -i support
+
+commit 6aaf8a292bd8b3cd8197cdd2645b4a0511ecb488
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Apr 4 19:31:05 2019 +0800
+
+    add -F support
+
+commit 6648921f6684e963c51c7d9a3d2d8e15c044bf7c
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Apr 3 11:05:54 2019 +0800
+
+    ls.c always set -A for superuser
+
+commit 66578c9dfd75a0b464a7bc0375f77a4e6c48079c
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Apr 3 11:00:57 2019 +0800
+
+    ls.c: add -aA switch support
+
+commit 099074a7927d7217e8eec0e2138cc357ca46d736
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Tue Apr 2 11:27:14 2019 +0800
+
+    ls.c: print dirent (non-recursive)
+
+commit 800ff68931616dd465b3d96a4b1b76d095430287
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Mar 28 19:21:39 2019 +0800
+
+    ls.c: prepare for printing
+
+commit b336522e504cd499e425b4721363f397282eecf8
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Mar 28 18:56:02 2019 +0800
+
+    ls.c: improve sort
+
+commit 247a9539ed46735bf5e91a401942b7b2e32b9535
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Thu Mar 28 17:02:06 2019 +0800
+
+    ls.c: setup comparation code frame
+
+commit b4c20ece9e769ee09442fbfc99ecbbfc60bda3f1
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Mar 27 20:09:36 2019 +0800
+
+    test ls.c: differenciate normal file & dir arguments
+
+commit 41e81fbba6d00a67c19f604ad8b93fc246d6f4e6
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Mar 27 19:51:43 2019 +0800
+
+    ls.c: differenciate normal file & dir arguments
+
+commit 87f3bab4111dbac480316de402e3a7d6b1786b98
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Mar 27 19:08:42 2019 +0800
+
+    ls.c: implement Vector (variable-size array)
+
+commit 83e907bbf33660c0778940bb41ef1e4878df0452
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Wed Mar 27 18:07:25 2019 +0800
+
+    ls.c: add mutual exclusion & terminal judge support on command line parsing
+
+commit 935ed1aad994450626af4657530d747cc35b2c8f
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Tue Mar 26 09:01:10 2019 +0800
+
+    code skeleton
+
+commit 6dab471c9125b28181227e3dd94a9ec6a15687ec
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Mon Mar 25 11:13:45 2019 +0800
+
+    examine test sciprts part 2 -- finished, prepared to write code
+
+commit 4d3421f051ae3d97dd6d1f15efa2e42cfecb8ad2
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Fri Mar 22 13:39:07 2019 +0800
+
+    examine test scripts part 1
+
+commit 75b61f038a090ce358ed886821c68b3823d840d9
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Tue Mar 19 17:24:30 2019 +0800
+
+    fund setup
+
+commit d49b2a9b28092440e4ed25ebe6b98560d2e43940
+Author: Chengkai Zhang <zchengkai826@gmail.com>
+Date:   Tue Mar 19 15:42:28 2019 +0800
+
+    Initial commit

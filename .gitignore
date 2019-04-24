@@ -1,6 +1,7 @@
 # Custom
 *~
 *.swp
+testdir/
 ls
 root
 
