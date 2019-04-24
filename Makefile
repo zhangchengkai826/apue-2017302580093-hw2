@@ -24,3 +24,7 @@ ls: $(OBJ)
 clean:
 	rm -f $(ODIR)/* *~ core $(IDIR)/*~
 
+.PHONY: test
+test:
+	./test.sh
+

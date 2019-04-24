@@ -489,6 +489,7 @@ void print_them(struct Vector *v, const char *blk_name) {
 
   getcwd(oldwd, sizeof(oldwd));
   chdir(blk_name);
+  sort_vec(v, cf, odr);
   init_vec(&mcv, MID_SIZE);
 
   mlen_szino = get_mlen_szino(v);
@@ -693,7 +694,6 @@ void print_them(struct Vector *v, const char *blk_name) {
           appends_vec(&nrml, fn);
       }
       closedir(dp);
-      sort_vec(&nrml, cf, odr);
       print_them(&nrml, dirs.d[i]);
     }
 
@@ -787,8 +787,6 @@ int main(int argc, char *argv[]) {
       odr = ASC;
   }
 
-  sort_vec(&nrml, cf, odr);
-  sort_vec(&dirs, cf, odr);
   print_them(&nrml, NULL);
 
   for(i = 0; i < (int)dirs.n; i++) {
@@ -807,7 +805,6 @@ int main(int argc, char *argv[]) {
         appends_vec(&nrml, fn);
     }
     closedir(dp);
-    sort_vec(&nrml, cf, odr);
     print_them(&nrml, dirs.d[i]);
   }
 
